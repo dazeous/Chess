@@ -1,26 +1,32 @@
-start_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq"
+from PIL import Image, ImageTk
 
 
 class Piece:
-    def __init__(self, type, color, img_path):
-        self.type = type
+    def __init__(self, piece_type: str, color: str, symbol: str):
+        self.type = piece_type
         self.color = color
-        self.img = img_path
+        self.symbol = symbol
+        self.tk_image = None
+    def load_image(self, target_size: int = 85):
+        if self.tk_image is None:
+            filename = f"res/{self.type}_{self.color}.png"
+            img = Image.open(filename)
+            # Resize using Lanczos resampling for crisp quality
+            img = img.resize((target_size, target_size), Image.Resampling.LANCZOS)
+            self.tk_image = ImageTk.PhotoImage(img)
+        return self.tk_image
 
 
+# Factory mapping by FEN symbol
+PIECE_SPECS = {
+    'k': ('king', 'black'),   'K': ('king', 'white'),
+    'q': ('queen', 'black'),  'Q': ('queen', 'white'),
+    'r': ('rook', 'black'),   'R': ('rook', 'white'),
+    'b': ('bishop', 'black'), 'B': ('bishop', 'white'),
+    'n': ('knight', 'black'), 'N': ('knight', 'white'),
+    'p': ('pawn', 'black'),   'P': ('pawn', 'white'),
+}
 
-    def load_position_from_fen(fen):
-        piece_type_from_symbol = {
-            'k': Piece("king", "black", "res/king_black.png"),
-            'K': Piece("king", "white", "res/king_white.png"),
-            'q': Piece("queen", "black", "res/queen_black.png"),
-            'Q': Piece("queen", "white", "res/queen_white.png"),
-            'r': Piece("rook", "black", "res/rook_black.png"),
-            'R': Piece("rook", "white", "res/rook_white.png"),
-            'b': Piece("bishop", "black", "res/bishop_black.png"),
-            'B': Piece("bishop", "white", "res/bishop_white.png"),
-            'n': Piece("knight", "black", "res/knight_black.png"),
-            'N': Piece("knight", "white", "res/knight_white.png"),
-            'p': Piece("Pawn", "black", "res/pawn_black.png"),
-            'P': Piece("Pawn", "white", "res/pawn_white.png")
-        }
+def get_piece(symbol: str) -> Piece:
+    piece_type, color = PIECE_SPECS[symbol]
+    return Piece(piece_type, color, symbol)
